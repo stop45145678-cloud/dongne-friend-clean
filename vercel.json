@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/admin/moderation", "destination": "/index.html" },
+    { "source": "/admin/moderation/(.*)", "destination": "/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
