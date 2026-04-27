@@ -1,0 +1,6 @@
+{
+  "dependencies_to_add": {
+    "firebase-admin": "latest"
+  },
+  "note": "기존 package.json에 firebase-admin이 없으면 dependencies에 추가하세요."
+}

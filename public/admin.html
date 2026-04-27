@@ -1,33 +1,324 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-  <title>관리자 페이지</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>동네친구 관리자</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f7f8;
+      margin: 0;
+      padding: 24px;
+      color: #222;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.06);
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    input {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      min-width: 240px;
+    }
+
+    button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      background: #222;
+      color: white;
+      margin: 4px;
+    }
+
+    button.danger {
+      background: #d93025;
+    }
+
+    button.safe {
+      background: #188038;
+    }
+
+    button.gray {
+      background: #666;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .row {
+      border-top: 1px solid #eee;
+      padding: 14px 0;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 13px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #eee;
+      margin-left: 6px;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #111;
+      color: #eee;
+      border-radius: 12px;
+      padding: 14px;
+      overflow-x: auto;
+    }
+  </style>
 </head>
 <body>
-  <h1>관리자 페이지</h1>
+  <div class="wrap">
+    <div class="card">
+      <h1>관리자 페이지</h1>
+      <p class="muted">ADMIN_TOKEN 입력 후 유저/신고/게시글을 관리합니다.</p>
+      <input id="token" type="password" placeholder="관리자 토큰 입력" />
+      <button onclick="login()">로그인</button>
+      <button class="gray" onclick="logout()">로그아웃</button>
+      <p id="loginStatus" class="muted"></p>
+    </div>
 
-  <input id="token" placeholder="관리자 토큰 입력" />
-  <button onclick="login()">로그인</button>
+    <div id="dashboard" class="hidden">
+      <div class="card">
+        <h2>관리 메뉴</h2>
+        <button onclick="loadUsers()">유저 목록 새로고침</button>
+        <button onclick="loadReports()">신고 목록 새로고침</button>
+      </div>
 
-  <pre id="result"></pre>
+      <div class="card">
+        <h2>유저 목록</h2>
+        <div id="users"></div>
+      </div>
+
+      <div class="card">
+        <h2>신고 목록</h2>
+        <div id="reports"></div>
+      </div>
+
+      <div class="card">
+        <h2>게시글 직접 삭제</h2>
+        <input id="postIdInput" placeholder="삭제할 게시글 ID" />
+        <button class="danger" onclick="deletePostManual()">게시글 삭제</button>
+      </div>
+
+      <div class="card">
+        <h2>처리 결과</h2>
+        <pre id="result">{}</pre>
+      </div>
+    </div>
+  </div>
 
   <script>
-    async function login() {
-      const token = document.getElementById("token").value;
+    let ADMIN_TOKEN = localStorage.getItem("ADMIN_TOKEN") || "";
+    document.getElementById("token").value = ADMIN_TOKEN;
 
-      const res = await fetch("/api/admin/users", {
+    function setResult(data) {
+      document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+    }
+
+    async function api(path, options = {}) {
+      const token = document.getElementById("token").value.trim();
+
+      const res = await fetch(path, {
+        ...options,
         headers: {
-          Authorization: token,
-        },
+          "Content-Type": "application/json",
+          "Authorization": token,
+          ...(options.headers || {})
+        }
       });
 
+      const data = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        alert("권한 없음");
+        throw new Error(data.error || "요청 실패");
+      }
+
+      return data;
+    }
+
+    async function login() {
+      try {
+        ADMIN_TOKEN = document.getElementById("token").value.trim();
+        localStorage.setItem("ADMIN_TOKEN", ADMIN_TOKEN);
+
+        const data = await api("/api/admin/users");
+        document.getElementById("dashboard").classList.remove("hidden");
+        document.getElementById("loginStatus").innerText = "로그인 성공";
+        setResult(data);
+        renderUsers(data.users || []);
+        await loadReports();
+      } catch (err) {
+        document.getElementById("dashboard").classList.add("hidden");
+        document.getElementById("loginStatus").innerText = "로그인 실패: " + err.message;
+        alert("로그인 실패: " + err.message);
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("ADMIN_TOKEN");
+      document.getElementById("token").value = "";
+      document.getElementById("dashboard").classList.add("hidden");
+      document.getElementById("loginStatus").innerText = "로그아웃됨";
+    }
+
+    async function loadUsers() {
+      try {
+        const data = await api("/api/admin/users");
+        renderUsers(data.users || []);
+        setResult(data);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadReports() {
+      try {
+        const data = await api("/api/admin/reports");
+        renderReports(data.reports || []);
+        setResult(data);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function renderUsers(users) {
+      const box = document.getElementById("users");
+
+      if (!users.length) {
+        box.innerHTML = "<p class='muted'>유저가 없거나 DB 연결 전입니다.</p>";
         return;
       }
 
-      const data = await res.json();
-      document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+      box.innerHTML = users.map(user => `
+        <div class="row">
+          <b>${escapeHtml(user.nickname || user.displayName || "닉네임 없음")}</b>
+          ${user.banned ? "<span class='badge'>정지됨</span>" : ""}
+          <div class="muted">ID: ${escapeHtml(user.id || "")}</div>
+          <div class="muted">Email: ${escapeHtml(user.email || "-")}</div>
+          <div class="muted">온도: ${escapeHtml(String(user.temperature ?? "-"))} / 코인: ${escapeHtml(String(user.coins ?? "-"))}</div>
+          <button class="danger" onclick="banUser('${escapeAttr(user.id)}')">유저 정지</button>
+          <button class="safe" onclick="unbanUser('${escapeAttr(user.id)}')">정지 해제</button>
+        </div>
+      `).join("");
+    }
+
+    function renderReports(reports) {
+      const box = document.getElementById("reports");
+
+      if (!reports.length) {
+        box.innerHTML = "<p class='muted'>신고가 없거나 DB 연결 전입니다.</p>";
+        return;
+      }
+
+      box.innerHTML = reports.map(report => `
+        <div class="row">
+          <b>신고 사유: ${escapeHtml(report.reason || "미입력")}</b>
+          <div class="muted">신고 ID: ${escapeHtml(report.id || "")}</div>
+          <div class="muted">신고 대상 유저: ${escapeHtml(report.targetUserId || "-")}</div>
+          <div class="muted">신고 게시글: ${escapeHtml(report.postId || "-")}</div>
+          <div class="muted">신고자: ${escapeHtml(report.reporterId || "-")}</div>
+          <div class="muted">상태: ${escapeHtml(report.status || "pending")}</div>
+          ${report.targetUserId ? `<button class="danger" onclick="banUser('${escapeAttr(report.targetUserId)}')">대상 유저 정지</button>` : ""}
+          ${report.postId ? `<button class="danger" onclick="deletePost('${escapeAttr(report.postId)}')">게시글 삭제</button>` : ""}
+        </div>
+      `).join("");
+    }
+
+    async function banUser(userId) {
+      if (!userId) return alert("유저 ID 없음");
+      if (!confirm("이 유저를 정지할까요?")) return;
+
+      try {
+        const data = await api("/api/admin/ban-user", {
+          method: "POST",
+          body: JSON.stringify({ userId })
+        });
+        setResult(data);
+        await loadUsers();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function unbanUser(userId) {
+      if (!userId) return alert("유저 ID 없음");
+      if (!confirm("이 유저 정지를 해제할까요?")) return;
+
+      try {
+        const data = await api("/api/admin/unban-user", {
+          method: "POST",
+          body: JSON.stringify({ userId })
+        });
+        setResult(data);
+        await loadUsers();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deletePost(postId) {
+      if (!postId) return alert("게시글 ID 없음");
+      if (!confirm("이 게시글을 삭제할까요?")) return;
+
+      try {
+        const data = await api("/api/admin/delete-post", {
+          method: "POST",
+          body: JSON.stringify({ postId })
+        });
+        setResult(data);
+        await loadReports();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deletePostManual() {
+      const postId = document.getElementById("postIdInput").value.trim();
+      await deletePost(postId);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeAttr(value) {
+      return escapeHtml(value).replaceAll("`", "&#096;");
+    }
+
+    if (ADMIN_TOKEN) {
+      document.getElementById("loginStatus").innerText = "저장된 토큰 있음. 로그인 버튼을 누르세요.";
     }
   </script>
 </body>

@@ -5,19 +5,19 @@ export default async function handler(req, res) {
   if (!requireAdmin(req, res)) return;
 
   try {
-    const result = await readCollection("users", 100);
+    const result = await readCollection("reports", 100);
 
     return res.status(200).json({
       success: true,
       message: result.connected
-        ? "유저 목록 불러오기 성공"
+        ? "신고 목록 불러오기 성공"
         : result.message,
       firebaseConnected: result.connected,
-      users: result.items,
+      reports: result.items,
     });
   } catch (error) {
     return res.status(500).json({
-      error: "유저 목록 불러오기 실패",
+      error: "신고 목록 불러오기 실패",
       detail: error.message,
     });
   }
