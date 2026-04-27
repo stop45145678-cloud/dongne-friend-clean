@@ -1,0 +1,74 @@
+{
+  "startTemperature": 36.5,
+  "display": {
+    "nicknameBadgeSize": "small",
+    "badgeStyle": "rounded translucent capsule",
+    "listView": "small spirit icon + title next to nickname",
+    "profileView": "large spirit image + title description"
+  },
+  "titles": [
+    {
+      "min": 100,
+      "max": null,
+      "title": "엔젤",
+      "emoji": "👼",
+      "label": "👼 엔젤",
+      "description": "최고의 온기를 가진 특별한 존재",
+      "spiritConcept": "하얀 천사 정령, 후광, 작은 날개, 금빛 하트"
+    },
+    {
+      "min": 50,
+      "max": 99.9,
+      "title": "천사의 날개",
+      "emoji": "🪽",
+      "label": "🪽 천사의 날개",
+      "description": "마치 천사 같은 따뜻한 마음의 소유자",
+      "spiritConcept": "분홍빛 불정령, 작은 천사 날개, 반짝이는 하트"
+    },
+    {
+      "min": 40,
+      "max": 49.9,
+      "title": "선한 사람",
+      "emoji": "🔥",
+      "label": "🔥 선한 사람",
+      "description": "선한 마음으로 주변을 따뜻하게 만드는 사람",
+      "spiritConcept": "붉은/분홍 불정령, 하트, 부드러운 불꽃"
+    },
+    {
+      "min": 37,
+      "max": 39.9,
+      "title": "따뜻한 사람",
+      "emoji": "🔥",
+      "label": "🔥 따뜻한 사람",
+      "description": "함께 있으면 기분이 따뜻해지는 사람",
+      "spiritConcept": "주황 불정령, 작은 하트, 포근한 표정"
+    },
+    {
+      "min": 33,
+      "max": 36.9,
+      "title": "차분한 사람",
+      "emoji": "💧",
+      "label": "💧 차분한 사람",
+      "description": "차분하고 안정감 있는 편안한 사람",
+      "spiritConcept": "하늘색 온기 정령, 부드러운 미소, 차분한 오라"
+    },
+    {
+      "min": 20,
+      "max": 32.9,
+      "title": "차가운 사람",
+      "emoji": "❄️",
+      "label": "❄️ 차가운 사람",
+      "description": "조금은 차갑게 느껴지는 신비로운 사람",
+      "spiritConcept": "파란 얼음 정령, 눈송이, 조용한 표정"
+    },
+    {
+      "min": -100,
+      "max": 19.9,
+      "title": "악마",
+      "emoji": "😈",
+      "label": "😈 악마",
+      "description": "감정이 메말라 온기가 바닥까지 떨어진 사람",
+      "spiritConcept": "귀여운 보라/검정 악마 정령, 작은 뿔, 박쥐 날개, 보라 불꽃"
+    }
+  ]
+}
