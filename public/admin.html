@@ -1,36 +1,34 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>관리자</title>
-  </head>
-  <body>
-    <h1>관리자 페이지</h1>
+<head>
+  <title>관리자 페이지</title>
+</head>
+<body>
+  <h1>관리자 페이지</h1>
 
-    <input id="token" placeholder="관리자 토큰 입력" />
-    <button onclick="login()">로그인</button>
+  <input id="token" placeholder="관리자 토큰 입력" />
+  <button onclick="login()">로그인</button>
 
-    <div id="result"></div>
+  <pre id="result"></pre>
 
-    <script>
-      async function login() {
-        const token = document.getElementById("token").value;
+  <script>
+    async function login() {
+      const token = document.getElementById("token").value;
 
-        const res = await fetch("/api/admin/users", {
-          headers: {
-            Authorization: token,
-          },
-        });
+      const res = await fetch("/api/admin/users", {
+        headers: {
+          Authorization: token,
+        },
+      });
 
-        if (!res.ok) {
-          alert("권한 없음");
-          return;
-        }
-
-        const data = await res.json();
-
-        document.getElementById("result").innerHTML =
-          JSON.stringify(data, null, 2);
+      if (!res.ok) {
+        alert("권한 없음");
+        return;
       }
-    </script>
-  </body>
+
+      const data = await res.json();
+      document.getElementById("result").innerText = JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
 </html>
